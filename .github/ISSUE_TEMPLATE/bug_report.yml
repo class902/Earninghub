@@ -1,0 +1,22 @@
+name: Bug report
+description: Something on the site or admin panel is not working
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include the page URL and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: input
+    id: browser
+    attributes:
+      label: Browser / device
+  - type: markdown
+    attributes:
+      value: "⚠️ Never paste passwords, OTPs, UPI IDs or personal data into an issue."

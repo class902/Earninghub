@@ -1,0 +1,240 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Geist+Mono:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Backfilled during migration to 2.0 */
+    --font-serif: ui-serif;
+
+    --background: 222 47% 97%;
+    --foreground: 222 47% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 8%;
+    --primary: 213 94% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 32% 92%;
+    --secondary-foreground: 222 47% 8%;
+    --muted: 217 32% 92%;
+    --muted-foreground: 215 16% 46%;
+    --accent: 217 32% 92%;
+    --accent-foreground: 222 47% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 213 94% 52%;
+    --chart-1: 213 94% 52%;
+    --chart-2: 38 92% 50%;
+    --chart-3: 142 72% 46%;
+    --chart-4: 280 70% 56%;
+    --chart-5: 20 90% 56%;
+    --gold: 42 88% 55%;
+    --gold-foreground: 0 0% 10%;
+    --fire: 14 100% 53%;
+    --radius: 0.75rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 8%;
+    --sidebar-primary: 213 94% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 32% 92%;
+    --sidebar-accent-foreground: 222 47% 8%;
+    --sidebar-border: 214 32% 88%;
+    --sidebar-ring: 213 94% 52%;
+    --font-sans: 'Plus Jakarta Sans', 'Helvetica Neue', sans-serif;
+    --font-mono: 'Geist Mono', 'Courier New', monospace;
+    --shadow-x: 0px;
+    --shadow-y: 1px;
+    --shadow-blur: 2px;
+    --shadow-spread: 0px;
+    --shadow-opacity: 0.05;
+    --shadow-color: #000000;
+    --shadow-rgb: 0 0 0;
+    --shadow-2xs: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / calc(var(--shadow-opacity) * 0.5));
+    --shadow-xs: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / calc(var(--shadow-opacity) * 0.5));
+    --shadow-sm: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / var(--shadow-opacity)), var(--shadow-x) calc(var(--shadow-y) / 4) calc(var(--shadow-blur) / 2) calc(var(--shadow-spread) - 1px) rgb(var(--shadow-rgb) / var(--shadow-opacity));
+    --shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / var(--shadow-opacity)), var(--shadow-x) calc(var(--shadow-y) / 2) calc(var(--shadow-blur) / 2) calc(var(--shadow-spread) - 1px) rgb(var(--shadow-rgb) / var(--shadow-opacity));
+    --shadow-md: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / var(--shadow-opacity)), var(--shadow-x) calc(var(--shadow-y) / 2) calc(var(--shadow-blur) * 2) calc(var(--shadow-spread) - 1px) rgb(var(--shadow-rgb) / var(--shadow-opacity));
+    --shadow-lg: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / var(--shadow-opacity)), var(--shadow-x) var(--shadow-y) calc(var(--shadow-blur) * 3) calc(var(--shadow-spread) - 1px) rgb(var(--shadow-rgb) / var(--shadow-opacity));
+    --shadow-xl: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / var(--shadow-opacity)), var(--shadow-x) calc(var(--shadow-y) * 2) calc(var(--shadow-blur) * 5) calc(var(--shadow-spread) - 1px) rgb(var(--shadow-rgb) / var(--shadow-opacity));
+    --shadow-2xl: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / calc(var(--shadow-opacity) * 2.5));
+  }
+
+  .dark {
+    --background: 222 47% 4%;
+    --foreground: 210 17% 97%;
+    --card: 222 43% 7%;
+    --card-foreground: 210 17% 97%;
+    --popover: 222 43% 8%;
+    --popover-foreground: 210 17% 97%;
+    --primary: 213 94% 58%;
+    --primary-foreground: 222 47% 4%;
+    --secondary: 217 32% 12%;
+    --secondary-foreground: 210 17% 97%;
+    --muted: 217 32% 11%;
+    --muted-foreground: 215 20% 52%;
+    --accent: 217 32% 14%;
+    --accent-foreground: 213 94% 70%;
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 210 17% 97%;
+    --border: 217 28% 15%;
+    --input: 217 28% 15%;
+    --ring: 213 94% 58%;
+    --chart-1: 213 94% 58%;
+    --chart-2: 38 92% 50%;
+    --chart-3: 142 72% 46%;
+    --chart-4: 280 70% 60%;
+    --chart-5: 20 90% 58%;
+    --sidebar-background: 222 50% 4%;
+    --sidebar-foreground: 210 17% 97%;
+    --sidebar-primary: 213 94% 58%;
+    --sidebar-primary-foreground: 222 47% 4%;
+    --sidebar-accent: 217 32% 11%;
+    --sidebar-accent-foreground: 213 94% 70%;
+    --sidebar-border: 217 28% 13%;
+    --sidebar-ring: 213 94% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* ── Smooth Transitions ────────────────────────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent layout shift on images */
+img {
+  content-visibility: auto;
+}
+
+/* Ensure touch targets are comfortably tappable */
+button, a, [role="button"] {
+  min-height: 36px;
+  min-width: 36px;
+}
+
+/* Prevent accidental double-tap zoom on mobile */
+button, a {
+  touch-action: manipulation;
+}
+
+/* Smooth page-level transitions for route changes */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+/* GPU-accelerated transforms for smoother animations */
+.will-change-transform {
+  will-change: transform;
+}
+
+/* Contain paint for heavy sections to prevent layout thrashing */
+.contain-paint {
+  contain: paint;
+}
+
+/* ── Premium scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ── Card hover lift ───────────────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Subtle focus ring for interactive elements ──────────────────── */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ── Smooth transitions for interactive elements ─────────────────── */
+button, a, input, select, textarea {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 0.15s;
+  transition-timing-function: ease;
+}
+
+/* ── Status Emoji Animations ──────────────────────────────────── */
+@keyframes status-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes status-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+@keyframes status-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-2px) scale(1.1); }
+  50% { transform: translateY(0) scale(1.05); }
+  75% { transform: translateY(-1px) scale(1.08); }
+}
+@keyframes status-shake {
+  0%, 100% { transform: translateX(0) scale(1); }
+  20% { transform: translateX(-1.5px) scale(1.05); }
+  40% { transform: translateX(1.5px) scale(1.1); }
+  60% { transform: translateX(-1px) scale(1.05); }
+  80% { transform: translateX(1px) scale(1); }
+}
+
+.status-emoji-spin {
+  display: inline-flex;
+  animation: status-spin 2s linear infinite;
+}
+.status-emoji-pulse {
+  display: inline-flex;
+  animation: status-pulse 2.2s ease-in-out infinite;
+}
+.status-emoji-bounce {
+  display: inline-flex;
+  animation: status-bounce 1.6s ease-in-out infinite;
+}
+.status-emoji-shake {
+  display: inline-flex;
+  animation: status-shake 1.5s ease-in-out infinite;
+}

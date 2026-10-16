@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Zite SDK is pinned to the version the backend runtime expects.
+      - dependency-name: zitejs
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -1,0 +1,24 @@
+{
+  "name": "earning-hub-web-10",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "zitejs": "0.9.112"
+  },
+  "version": "1.0.0",
+  "description": "EarningHub — referral & cashback offers platform (React + Vite frontend, Zite backend)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @project/earning-hub-web-10",
+    "typecheck": "npm exec -w @project/earning-hub-web-10 -- tsc -b",
+    "build": "npm run build -w @project/earning-hub-web-10",
+    "build:pages": "node scripts/build-pages.mjs",
+    "preview": "npm run preview -w @project/earning-hub-web-10",
+    "check:backend": "node scripts/check-backend.mjs"
+  }
+}

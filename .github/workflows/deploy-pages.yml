@@ -1,0 +1,72 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Secret scan
+        run: node scripts/scan-secrets.mjs
+      - name: Build static site
+        run: npm run build:pages
+        env:
+          # Optional repository variables (Settings → Secrets and variables → Actions → Variables)
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+          ZITE_RUNNER_URL: ${{ vars.ZITE_RUNNER_URL }}
+          ZITE_RUNTIME_URL: ${{ vars.ZITE_RUNTIME_URL }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/earning-hub-web-10/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke-test:
+    name: Backend reachability (non-blocking)
+    needs: deploy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Check the hosted site can reach the Zite backend
+        env:
+          ZITE_RUNNER_URL: ${{ vars.ZITE_RUNNER_URL }}
+        run: |
+          ORIGIN="https://${{ github.repository_owner }}.github.io"
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then ORIGIN="https://${{ vars.CUSTOM_DOMAIN }}"; fi
+          node scripts/check-backend.mjs --origin "$ORIGIN"
