@@ -1,0 +1,27 @@
+name = "earninghub-api"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+tsconfig = "./tsconfig.json"
+workers_dev = true
+
+# All data lives in one SQLite-backed Durable Object (free-plan compatible,
+# strongly consistent, no external database to provision).
+[[durable_objects.bindings]]
+name = "DATABASE"
+class_name = "ApiDatabase"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ApiDatabase"]
+
+[vars]
+# Public URL of the website (used for links inside emails / generated referral links).
+PUBLIC_APP_URL = "https://class902.github.io/Earninghub"
+# Comma-separated browser origins allowed to call the API.
+ALLOWED_ORIGINS = "https://class902.github.io"
+
+# Secrets (set with `wrangler secret put` or via the GitHub Actions deploy workflow):
+#   ADMIN_PASSWORD   – admin login password            (required)
+#   SESSION_SECRET   – random string, signs admin sessions (required, 32+ chars)
+#   RESEND_API_KEY   – optional, enables outgoing email (OTP / lead alerts)
+#   MAIL_FROM        – optional, e.g. "EarningHub <alerts@yourdomain.com>"

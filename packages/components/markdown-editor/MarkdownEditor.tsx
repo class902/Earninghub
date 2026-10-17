@@ -66,7 +66,7 @@ export interface MarkdownEditorProps {
  * needs to write or edit formatted text. The editor returns markdown via
  * `onChange` and accepts markdown as `content`.
  *
- * Storage: if you need to persist rich text in a Zite database, use the
+ * Storage: if you need to persist rich text in a database, use the
  * `rich_text` field type for that field — it stores markdown directly.
  *
  * Styling: the editor renders its own border, shadow, and focus ring. Do NOT

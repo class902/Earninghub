@@ -1,6 +1,6 @@
 # Data model
 
-Schema of the Zite database behind EarningHub (generated from the project export).
+Schema of the SQLite database behind EarningHub. The source of truth is [`apps/worker/src/db/schema.ts`](../apps/worker/src/db/schema.ts); every table also has `id`, `created_at` and `updated_at` columns.
 
 | Table | Fields | Purpose |
 |---|---:|---|

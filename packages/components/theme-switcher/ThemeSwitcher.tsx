@@ -1322,8 +1322,8 @@ function applyTheme(themeId: string) {
 }
 
 /**
- * This component is not meant to be consumed by Zite generated code, but just there
- * to help developing components and testing them with the different Zite themes.
+ * This component is not meant to be consumed by app code, but just there
+ * to help developing components and testing them with the different themes.
  * @internal
  */
 export function ThemeSwitcher() {

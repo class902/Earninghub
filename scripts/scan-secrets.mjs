@@ -29,13 +29,14 @@ function listFiles() {
 }
 
 const rules = [
-  [/zitejwt_[A-Za-z0-9._-]{20,}/, 'Zite JWT token'],
+  [/github_pat_[A-Za-z0-9_]{30,}/, 'GitHub fine-grained token'],
+  [/re_[A-Za-z0-9]{20,}_[A-Za-z0-9]{10,}/, 'Resend API key'],
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
   [/AIza[0-9A-Za-z_-]{35}/, 'Google API key'],
   [/gh[pousr]_[A-Za-z0-9]{30,}/, 'GitHub token'],
   [/sk_live_[0-9A-Za-z]{16,}/, 'Stripe live secret key'],
   [/xox[abprs]-[0-9A-Za-z-]{10,}/, 'Slack token'],
-  [/ZITE_ADMIN_PASSWORD\s*(\|\||\?\?)\s*['"`]/, 'hardcoded fallback for ZITE_ADMIN_PASSWORD'],
+  [/ADMIN_PASSWORD\s*(\|\||\?\?)\s*['"`]/, 'hardcoded fallback for ADMIN_PASSWORD'],
   [/\b(?:DEFAULT_)?(?:ADMIN_)?PASSWORD\s*=\s*['"`][^'"`\s]{6,}['"`]/, 'hardcoded password constant'],
 ];
 

@@ -16,7 +16,7 @@ jobs:
   verify:
     name: Typecheck · Secret scan · Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,9 +24,16 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Typecheck
+      - name: Typecheck (web + api)
         run: npm run typecheck
+      - name: Endpoint registry is up to date
+        run: node scripts/gen-registry.mjs && git diff --exit-code apps/worker/src/registry.ts
       - name: Secret scan
         run: node scripts/scan-secrets.mjs
-      - name: Production build
+      - name: Build website
         run: npm run build:pages
+        env:
+          API_URL: https://api.example.invalid
+      - name: Bundle the API (dry run, no deploy)
+        run: npx wrangler deploy --dry-run --outdir /tmp/api-bundle
+        working-directory: apps/worker

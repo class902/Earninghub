@@ -10,12 +10,13 @@ dist/
 !.env.example
 .npmrc
 
-# Zite generated scratch
-__zite__*
-
 # OS / editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# Cloudflare / local API state
+.wrangler/
+.dev.vars

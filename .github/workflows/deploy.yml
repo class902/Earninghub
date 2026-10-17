@@ -1,0 +1,119 @@
+name: Deploy
+
+# Deploys the API (Cloudflare Worker) and then the website (GitHub Pages).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  api:
+    name: Deploy API (Cloudflare)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      url: ${{ steps.url.outputs.url }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check required secrets
+        run: |
+          missing=0
+          for v in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ADMIN_PASSWORD SESSION_SECRET; do
+            if [ -z "${!v}" ]; then echo "::error title=Missing secret::Add the repository secret $v (Settings → Secrets and variables → Actions)"; missing=1; fi
+          done
+          if [ ${#SESSION_SECRET} -lt 32 ]; then echo "::error title=SESSION_SECRET too short::Use at least 32 random characters"; missing=1; fi
+          exit $missing
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Secret scan
+        run: node scripts/scan-secrets.mjs
+      - name: Work out public URLs
+        id: urls
+        run: |
+          OWNER="${{ github.repository_owner }}"; REPO="${{ github.event.repository.name }}"
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
+            echo "origin=https://${{ vars.CUSTOM_DOMAIN }}" >> "$GITHUB_OUTPUT"
+            echo "site=https://${{ vars.CUSTOM_DOMAIN }}"   >> "$GITHUB_OUTPUT"
+          else
+            echo "origin=https://${OWNER}.github.io"        >> "$GITHUB_OUTPUT"
+            echo "site=https://${OWNER}.github.io/${REPO}"  >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy Worker
+        working-directory: apps/worker
+        run: |
+          npx wrangler deploy \
+            --var "PUBLIC_APP_URL:${{ steps.urls.outputs.site }}" \
+            --var "ALLOWED_ORIGINS:${{ steps.urls.outputs.origin }}" 2>&1 | tee /tmp/deploy.log
+      - name: Set secrets
+        working-directory: apps/worker
+        run: |
+          printf '%s' "$ADMIN_PASSWORD" | npx wrangler secret put ADMIN_PASSWORD
+          printf '%s' "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET
+          if [ -n "$RESEND_API_KEY" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
+      - name: Resolve API URL
+        id: url
+        run: |
+          URL="${{ vars.API_URL }}"
+          if [ -z "$URL" ]; then URL=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/deploy.log | head -1); fi
+          if [ -z "$URL" ]; then echo "::error title=API URL::Could not determine the Worker URL. Register a workers.dev subdomain in the Cloudflare dashboard (Workers & Pages) or set the repository variable API_URL."; exit 1; fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "### API deployed: $URL" >> "$GITHUB_STEP_SUMMARY"
+
+  pages:
+    name: Build & deploy website
+    needs: api
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Build
+        run: npm run build:pages
+        env:
+          API_URL: ${{ needs.api.outputs.url }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke-test:
+    name: Smoke test (API ↔ website)
+    needs: [api, pages]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Check API health, CORS and login protection
+        run: |
+          ORIGIN="https://${{ github.repository_owner }}.github.io"
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then ORIGIN="https://${{ vars.CUSTOM_DOMAIN }}"; fi
+          node scripts/check-backend.mjs --api "${{ needs.api.outputs.url }}" --origin "$ORIGIN" --strict

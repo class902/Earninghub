@@ -1,49 +1,47 @@
 # Architecture
 
-EarningHub is a single-page React application backed by typed server endpoints and a managed database on the **Zite** platform.
+EarningHub is a single-page React website talking to a small API. Both are deployed from this repository.
 
 ```mermaid
 flowchart LR
-  U[Visitor / referrer] -->|HTTPS| P[GitHub Pages<br/>static React SPA]
+  U[Visitor / referrer] -->|HTTPS| P[GitHub Pages<br/>React SPA]
   A[Admin] -->|/admin-boss| P
-  P -->|POST /public/&lt;flow-id&gt;/api/&lt;endpoint&gt;| R[Zite runner<br/>workflows.zite.com]
-  R --> E[70 TypeScript endpoints<br/>apps/earning-hub-web-10/src/api]
-  E --> D[(Zite database<br/>10 tables)]
-  E --> M[Email integration<br/>OTP delivery]
+  P -->|POST /api/&lt;endpoint&gt;| W[Cloudflare Worker]
+  W -->|forward| DO[(Durable Object<br/>SQLite database)]
+  DO --> E[66 endpoints<br/>apps/web/src/api]
+  E -.-> M[Resend email]
 ```
 
-## Layers
+## Components
 
 | Layer | Location | Notes |
 |---|---|---|
-| Frontend | `apps/earning-hub-web-10/src` | React 18, Vite, Tailwind, Radix/shadcn UI, TanStack Query, React Router. Pages are lazy-loaded. |
-| Backend endpoints | `apps/earning-hub-web-10/src/api` | One file per endpoint (`createEndpoint` + Zod input/output schemas). 51 admin endpoints and 19 public / user-facing endpoints. |
-| Shared UI | `packages/components` | shadcn/ui primitives, theme switcher, markdown editor. |
-| Database client | `.zite/db.ts` | Generated, typed access to the tables in [DATA_MODEL.md](DATA_MODEL.md). |
-| Hosting glue | `scripts/`, `.github/workflows/` | Static build, SPA fallback, CI/CD, smoke test. |
+| Website | `apps/web/src` | React 18, Vite, Tailwind, Radix/shadcn UI, TanStack Query, React Router. Pages are lazy-loaded. |
+| Endpoints | `apps/web/src/api` | One file per endpoint: Zod input schema + `execute`. 47 admin endpoints, the rest public. They live next to the website so it can import their types. |
+| API runtime | `apps/worker/src/runtime` | `createEndpoint`, error codes, SQLite table client (`db`), admin auth, email. |
+| Router | `apps/worker/src/handler.ts` | `POST /api/<name>`, `POST /upload`, `GET /files/<id>`, `GET /api/health`. |
+| Database | `apps/worker/src/database.ts`, `db/schema.ts` | One SQLite-backed Durable Object. Tables are created/extended automatically from `schema.ts` on start. |
+| Typed client | `apps/web/src/lib/api.ts`, `caller.ts` | Types are inferred from the endpoint files. |
 
-## Routes
+## Request flow
 
-| Path | Purpose |
-|---|---|
-| `/` · `/offers` | Home, live offers |
-| `/:slug` · `/offer/:slug` | Offer detail and lead form |
-| `/exclusive/:slug` | Private campaign |
-| `/forms` · `/form/:slug` | Cashback forms |
-| `/user-lead-track` | Lead tracker for users |
-| `/refer` · `/refer-generate/:slug` · `/refer/:code` · `/offereftrck/:code` | Referral hub, link generator, landing and tracker |
-| `/admin-boss` | Admin panel (offers, leads, referrals, analytics, backups, settings) |
-
-## Static hosting model
-
-GitHub Pages only serves static files, so the repository deploys the **frontend**; the **backend stays on Zite**. The build:
-
-1. is compiled with `VITE_BASE_PATH` (sub-path or domain root) and `VITE_ZITE_RUNNER_URL` baked in;
-2. copies `index.html` to `404.html` so deep links such as `/offer/<slug>` load the app shell on a static host;
-3. runs a secret scan over the output before publishing.
-
-All shareable links the app generates (referral links, tracker links, offer links) go through `src/lib/appUrl.ts` so they stay correct under a sub-path.
+1. The browser calls `POST {API_URL}/api/<endpoint>` with `{ "inputs": { … } }`.
+2. The Worker answers CORS (allowed origins only) and forwards to the Durable Object.
+3. The router validates the input with the endpoint's Zod schema, checks the admin session if the endpoint takes one, and runs `execute`.
+4. Errors map to HTTP status codes (`400` invalid input, `401` unauthenticated, `404`, `429` rate limited, `500`).
 
 ## Admin authentication
 
-Admin endpoints require the server-side `ZITE_ADMIN_PASSWORD` environment variable (shared helper `src/lib/adminAuth.ts`). If it is not configured the endpoints refuse every request — there is no built-in default.
+- `adminLogin` checks the Admin ID and password (stored credentials, else the `ADMIN_PASSWORD` secret) and returns an HMAC-signed session token that expires after 12 hours (`SESSION_SECRET`).
+- The website sends that token with every admin call. The router verifies the signature and expiry before any admin endpoint runs; the raw password is never reused as a token.
+- Login is limited to 10 failed attempts per IP per 15 minutes.
+
+## Data & files
+
+- All records live in SQLite tables defined in [`schema.ts`](../apps/worker/src/db/schema.ts) (see [DATA_MODEL.md](DATA_MODEL.md)).
+- Uploaded images/PDFs (max 1.5 MB, images are shrunk in the browser first) are stored in the same database and served from `/files/<id>`.
+- The admin **Backup** page exports a full JSON snapshot you can restore at any time.
+
+## Hosting model
+
+The website is a static build (`VITE_API_URL`, `VITE_BASE_PATH` baked in) with a `404.html` fallback so deep links work on GitHub Pages. All generated links go through `src/lib/appUrl.ts`, so they stay correct under a sub-path.
