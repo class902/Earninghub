@@ -96,7 +96,7 @@ jobs:
         env:
           API_URL: ${{ needs.api.outputs.url }}
           CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/dist
