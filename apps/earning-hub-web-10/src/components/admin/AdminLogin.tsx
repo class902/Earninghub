@@ -20,7 +20,8 @@ function describeError(e: unknown): string {
   if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('load failed')) {
     return 'Cannot reach the server. Check your connection and try again.';
   }
-  return 'Login failed. Please try again.';
+  const status = /api call failed \((\d{3})\)/.exec(msg)?.[1];
+  return status ? `Login failed (error ${status}). Please try again.` : 'Login failed. Please try again.';
 }
 
 export default function AdminLogin({ onLogin }: Props) {

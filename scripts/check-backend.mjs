@@ -20,6 +20,22 @@ const url = `${runner}/public/${cfg.id}/api/getOffers`;
 
 const fail = (msg) => { console.log(`::warning title=Backend check::${msg}`); console.log(`✖ ${msg}`); process.exit(strict ? 1 : 0); };
 
+// Admin login endpoint probe: a deliberately wrong credential must be rejected (HTTP 401).
+// Confirms the auth endpoint is deployed and answering; never uses a real credential.
+try {
+  const r = await fetch(`${runner}/public/${cfg.id}/api/adminLogin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: origin },
+    body: JSON.stringify({ inputs: { username: 'healthcheck', password: 'invalid-probe' }, mode: 'live' }),
+  });
+  const text = (await r.text()).replace(/\s+/g, ' ').slice(0, 200);
+  const level = r.status === 401 ? 'notice' : 'warning';
+  console.log(`::${level} title=adminLogin probe::HTTP ${r.status} ${text}`);
+  console.log(`adminLogin : HTTP ${r.status} (expected 401 for a bad credential)`);
+} catch (err) {
+  console.log(`::warning title=adminLogin probe::${err.message}`);
+}
+
 try {
   const pre = await fetch(url, { method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type,authorization' } });
   const allow = pre.headers.get('access-control-allow-origin');
